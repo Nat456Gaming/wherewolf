@@ -1,11 +1,12 @@
-let game = [] ;
+let players = [];
+let roles = [];
+let game = [];
 
 function start(){
     game = {
         step : 0, //0 is beginning, 1 is night, 2 is morning, 3 is vote
         night : "loup"
     }
-    game.step = 0;
 }
 
 function center_button(){
@@ -31,7 +32,7 @@ function center_button(){
 function player_pressed(player){
     switch (game.step){
         case 0:
-            console.log(players_list[player-1]);
+            console.log(players[player-1]);
             break;
         case 1:
             switch (game.night){
@@ -56,7 +57,7 @@ function is_game_finished(newrole = false){
     let village_winning = true;
     let wolves_winning = true;
     let alive = [];
-    players_list.forEach(player => {
+    players.forEach(player => {
         if (player.role.includes("loup") || player.is_infected) village_winning = false;
         else if (player.role) wolves_winning = false;
         if (player.role) alive.push(player.name);
@@ -77,7 +78,7 @@ function is_game_finished(newrole = false){
  * @return {string} The new role of the player
  */
 function kill(nb_player, try_married = true){
-    let player = players_list[nb_player-1]
+    let player = players[nb_player-1]
     player.is_infected = false;
     if (player.lifes > 0){
         player.lifes --;
@@ -109,9 +110,9 @@ function random(list){
 function give_role(beginning = false){
     let role = "";
     for (let i = 0; i <= 30; i++){
-        role = random(current_roles);
+        role = random(roles.remaining);
         if ((! is_game_finished(role)) || beginning){
-            current_roles.splice(current_roles.indexOf(role), 1);
+            roles.remaining.splice(roles.remaining.indexOf(role), 1);
             return role;
         }
     }

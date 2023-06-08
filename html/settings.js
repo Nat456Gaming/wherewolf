@@ -4,7 +4,7 @@ const min_players = 4;
 const max_roles = 20;
 const min_roles = 0; //normally 8
 
-const auto_update = ["players_list","current_roles","game"]
+const auto_update = ["players","roles","game"]
 
 window.onload = () => {
     document.getElementById("game_style").max = roles_file.length;
@@ -13,7 +13,7 @@ window.onload = () => {
     if(getCookie("game_style")) document.getElementById('game_style').value = Number(getCookie("game_style"));
     if(! getCookie("player_names")) setCookie("player_names",JSON.stringify([]));
     update();
-    if(getCookie("players_list")){
+    if(getCookie("players")){
         auto_update.forEach(variable =>{
             eval(`${variable} = JSON.parse(getCookie("${variable}"));`);
         });
@@ -21,9 +21,6 @@ window.onload = () => {
     }
     setInterval(() => { update(); }, 100);
 };
-
-let players_list = [];
-let current_roles = [];
 
 let old_game_style = 0;
 let old_players = 0;
@@ -35,23 +32,23 @@ function update(){
     auto_update.forEach(variable =>{
         eval(`if (JSON.stringify(${variable}) != getCookie("${variable}") && ${variable} != "" ) setCookie("${variable}",JSON.stringify(${variable}));`);
     });
-    let players = document.getElementById('players_number').value;
-    let roles = document.getElementById('roles_number').value;
+    let players_nb = document.getElementById('players_number').value;
+    let roles_nb = document.getElementById('roles_number').value;
     let game_style = document.getElementById("game_style").value;
 
-    if (players != old_players){
-        players = Math.round(players);
-        if (players > max_players) players = players % 10;
-        if (players < min_players) players = min_players;
-        document.getElementById('players_number').value = players;
-        old_players = players;
-        setCookie("player_number",players);
-        if (players*roles < min_roles) document.getElementById('roles_number').value = 2;
-        if (players*roles > max_roles) document.getElementById('roles_number').value = 2;
+    if (players_nb != old_players){
+        players_nb = Math.round(players_nb);
+        if (players_nb > max_players) players_nb = players_nb % 10;
+        if (players_nb < min_players) players_nb = min_players;
+        document.getElementById('players_number').value = players_nb;
+        old_players = players_nb;
+        setCookie("player_number",players_nb);
+        if (players_nb*roles_nb < min_roles) document.getElementById('roles_number').value = 2;
+        if (players_nb*roles_nb > max_roles) document.getElementById('roles_number').value = 2;
 
         setup_list = [];
         document.getElementById("players_container").innerHTML = '';
-        for (let i = 1; i <= players; i++) {
+        for (let i = 1; i <= players_nb; i++) {
             let player = document.createElement("input");
             player.setAttribute("type","text");
             player.setAttribute("placeholder","Joueur "+i);
@@ -64,15 +61,15 @@ function update(){
         })
     }
     
-    if (roles != old_roles){
-        roles = Math.round(roles);
-        if (roles > 3) roles = roles % 3;
-        if (players*roles < min_roles) roles = 2;
-        if (players*roles > max_roles) roles = 2;
-        if (roles < 1) roles = 1;
-        document.getElementById('roles_number').value = roles;
-        old_roles = roles;
-        setCookie("roles_per_player",roles);
+    if (roles_nb != old_roles){
+        roles_nb = Math.round(roles_nb);
+        if (roles_nb > 3) roles_nb = roles_nb % 3;
+        if (players_nb*roles_nb < min_roles) roles_nb = 2;
+        if (players_nb*roles_nb > max_roles) roles_nb = 2;
+        if (roles_nb < 1) roles_nb = 1;
+        document.getElementById('roles_number').value = roles_nb;
+        old_roles = roles_nb;
+        setCookie("roles_per_player",roles_nb);
     }
 
     if (game_style != old_game_style){
@@ -102,8 +99,12 @@ function start_game(reload = false){
     }
     if (test){
         if(! reload){
-            for (i = 0; i < (old_roles*old_players); i++) current_roles.push(roles_file[document.getElementById("game_style").value-1][i]);
-            players_list = [];
+            let roles_list = roles_file[document.getElementById("game_style").value-1].slice(0,old_roles*old_players)
+            roles = {
+                current : JSON.parse(JSON.stringify(roles_list)),
+                remaining : JSON.parse(JSON.stringify(roles_list))
+            }
+            players = [];
             for (let i = 1; i <= document.getElementById('players_number').value; i++) {
                 let player = {
                     name : String(document.getElementById('player'+i).value),
@@ -116,27 +117,22 @@ function start_game(reload = false){
                     is_infected : false,
                     married_to : Number(false)
                 }
-                players_list.push(player);
+                players.push(player);
             }
-            setCookie("players_list",JSON.stringify(players_list));
         }
-        for (let i = 1; i <= players_list.length; i++) {
-            create_card(i,players_list.length);
-        }
+        for (let i = 1; i <= players.length; i++) create_card(i,players.length);
         document.getElementById("home").style.display = "none";
         document.getElementById("game").style.display = "block";
         start();
-    }else{
-        alert("Nomme bien tous les joueurs !");
-    }
+    }else alert("Nomme bien tous les joueurs !");
 }
 
 function exit(){
     if (confirm("Veux-tu vraiment quitter la partie ?")){
-        players_list = [];
-        current_roles = [];
-        game = [];
-        auto_update.forEach(variable => delCookie(variable));
+        auto_update.forEach(variable => {
+            delCookie(variable);
+            eval(`${variable} = [];`)
+        });
         document.getElementById("game_player_container").innerHTML = "<!-- PLAYERS CARDS GENERATED IN JS -->";
         document.getElementById("center_button").style.display = "block";
         daytime(0);
