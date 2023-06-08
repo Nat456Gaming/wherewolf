@@ -156,6 +156,15 @@ input[type="range"]::-moz-range-thumb {
     flex-direction: column;
 }
 
+#game button.btn-player img{
+    width: 216px;
+    height: 216px;
+}
+
+#game button.btn-player img.role-img{
+    display: none;
+}
+
 #game h2.player-name{
     margin-top: 5px;
     color: var(--foreground-color)

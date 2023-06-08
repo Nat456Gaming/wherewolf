@@ -9,29 +9,24 @@ const auto_update = ["players","roles","game"]
 window.onload = () => {
     document.getElementById("game_style").max = roles_file.length;
     if(getCookie("player_number")) document.getElementById('players_number').value = Number(getCookie("player_number"));
-    if(getCookie("roles_per_player")) document.getElementById('roles_number').value = Number(getCookie("roles_per_player"));
-    if(getCookie("game_style")) document.getElementById('game_style').value = Number(getCookie("game_style"));
+    if(getCookie("per_player")) document.getElementById('roles_number').value = Number(getCookie("per_player"));
+    if(getCookie("style")) document.getElementById('game_style').value = Number(getCookie("style"));
     if(! getCookie("player_names")) setCookie("player_names",JSON.stringify([]));
-    update();
     if(getCookie("players")){
-        auto_update.forEach(variable =>{
-            eval(`${variable} = JSON.parse(getCookie("${variable}"));`);
-        });
+        auto_update.forEach(variable => eval(`${variable} = JSON.parse(getCookie("${variable}"));`));
+        settings_update();
         start_game(true);
-    }
-    setInterval(() => { update(); }, 100);
+    }else settings_update_trig = setInterval(() => settings_update(), 100);
 };
 
+let settings_update_trig = 0;
 let old_game_style = 0;
 let old_players = 0;
 let old_roles = 0;
 let old_players_names = [];
 let setup_list = [];
 
-function update(){
-    auto_update.forEach(variable =>{
-        eval(`if (JSON.stringify(${variable}) != getCookie("${variable}") && ${variable} != "" ) setCookie("${variable}",JSON.stringify(${variable}));`);
-    });
+function settings_update(){
     let players_nb = document.getElementById('players_number').value;
     let roles_nb = document.getElementById('roles_number').value;
     let game_style = document.getElementById("game_style").value;
@@ -69,11 +64,11 @@ function update(){
         if (roles_nb < 1) roles_nb = 1;
         document.getElementById('roles_number').value = roles_nb;
         old_roles = roles_nb;
-        setCookie("roles_per_player",roles_nb);
+        setCookie("per_player",roles_nb);
     }
 
     if (game_style != old_game_style){
-        setCookie("game_style",game_style);
+        setCookie("style",game_style);
         old_game_style = game_style;
     }
 
@@ -94,8 +89,10 @@ function update(){
 
 function start_game(reload = false){
     let test = true;
-    for (let i = 1; i <= document.getElementById('players_number').value; i++) {
-        if (! document.getElementById('player'+i).value) test = false;
+    if(! reload){
+        for (let i = 1; i <= document.getElementById('players_number').value; i++) {
+            if (! document.getElementById('player'+i).value) test = false;
+        }
     }
     if (test){
         if(! reload){
@@ -119,6 +116,12 @@ function start_game(reload = false){
                 }
                 players.push(player);
             }
+            game = {
+                step : 0, //0 is beginning, 1 is night, 2 is morning, 3 is vote
+                night : "loup",
+                selected : false
+            }
+            clearInterval(settings_update_trig);
         }
         for (let i = 1; i <= players.length; i++) create_card(i,players.length);
         document.getElementById("home").style.display = "none";
@@ -133,6 +136,8 @@ function exit(){
             delCookie(variable);
             eval(`${variable} = [];`)
         });
+        clearInterval(game_update_trig);
+        settings_update_trig = setInterval(() => settings_update(), 100);
         document.getElementById("game_player_container").innerHTML = "<!-- PLAYERS CARDS GENERATED IN JS -->";
         document.getElementById("center_button").style.display = "block";
         daytime(0);
@@ -153,7 +158,7 @@ function create_card(player,total){
     card.style.bottom = String(window.innerHeight/2 + Math.round(square_coord(player, total, W, H)[1]) - 50)+"px";
     card.style.zIndex = player;
     card.style.transform =  "rotate("+String(square_coord(player, total, W, H)[2])+"rad) scale("+String(calc_scale(W,H))+")";
-    card.innerHTML ='<button class="btn-player" id="btn_player'+player+'" onclick="player_pressed('+player+')"><img id="img_player'+player+'" src="images/back.png" alt="player N°'+player+'"><h2 class="player-name">'+document.getElementById("player"+String(player)).value+'</h2></button>';
+    card.innerHTML ='<button class="btn-player" id="btn_player'+player+'" onclick="player_pressed('+player+')"><img class="img-back" id="img_player'+player+'" src="images/back.png" alt="player N°'+player+'"><h2 class="player-name">'+players[player-1].name+'</h2></button>';
     document.getElementById('game_player_container').appendChild(card);
 }
 

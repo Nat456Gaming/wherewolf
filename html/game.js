@@ -1,20 +1,45 @@
+let game_update_trig = 0;
+
 let players = [];
 let roles = [];
 let game = [];
 
-function start(){
-    game = {
-        step : 0, //0 is beginning, 1 is night, 2 is morning, 3 is vote
-        night : "loup"
+function game_update(){
+    auto_update.forEach(variable =>{
+        eval(`if (JSON.stringify(${variable}) != getCookie("${variable}") && ${variable} != "" ) setCookie("${variable}",JSON.stringify(${variable}));`);
+    });
+    if(game.step == 1){
+        if (game.selected){
+            document.querySelectorAll('.img-back').forEach(image => image.style.border = "");
+            document.getElementById("img_player"+game.selected).style.border = "solid red 5px";
+        }
+    }
+}
+
+async function start(){
+    if (game.step = 0) game.selected = false;
+    game_update_trig = setInterval(() => game_update(), 100);
+    while (! is_game_finished()){
+        players.forEach((player, pos) => {
+            let role_img = document.createElement("img");
+            role_img.setAttribute("class","role-img");
+            role_img.setAttribute("id","role_img"+String(pos+1));
+            role_img.src = `/images/roles/${player.role}.png`
+            document.getElementById("btn_player"+String(pos+1)).prepend(role_img);
+        });
+        document.getElementById("center_button").style.display = "block";
+        await waitUntil(() => ("123".includes(game.step)));
+        document.getElementById("center_button").style.display = "none";
+        daytime();
+        console.log("nuit:"+game.step)
+        await waitUntil(() => (game.step == 2));
     }
 }
 
 function center_button(){
     switch (game.step){
         case 0:
-            document.getElementById("center_button").style.display = "none";
-            game.step = 1;
-            daytime();
+            if(! game.selected) game.step = 1;
             break;
         case 1:
             //do nothing
@@ -32,12 +57,13 @@ function center_button(){
 function player_pressed(player){
     switch (game.step){
         case 0:
-            console.log(players[player-1]);
+            return_card(player);
             break;
         case 1:
             switch (game.night){
-                case "wolf":
-                    document.getElementById("img_player"+player).style.border = "solid red 5px";
+                case "loup":
+                    game.selected = player;
+                    //players[player-1].is_killed = true;
                     break;
             }
             break;
@@ -50,6 +76,20 @@ function player_pressed(player){
     }
 }
 
+function return_card(player){
+    if((game.selected == player || ! game.selected)){
+        if (document.getElementById("role_img"+player).style.display == ""){
+            document.getElementById("role_img"+player).style.display = "block";
+            document.getElementById("img_player"+player).style.display = "none";
+            game.selected = player;
+        }else{
+            document.getElementById("role_img"+player).style.display = "";
+            document.getElementById("img_player"+player).style.display = "";
+            game.selected = false;
+        }
+    }
+}
+
 /**
  * @return {string} Return who won (false if nobody)
  */
@@ -58,7 +98,7 @@ function is_game_finished(newrole = false){
     let wolves_winning = true;
     let alive = [];
     players.forEach(player => {
-        if (player.role.includes("loup") || player.is_infected) village_winning = false;
+        if (String(player.role).includes("loup") || player.is_infected) village_winning = false;
         else if (player.role) wolves_winning = false;
         if (player.role) alive.push(player.name);
     });
@@ -119,12 +159,22 @@ function give_role(beginning = false){
     return false;
 }
 
-function daytime(time = step){
+function daytime(time = game.step){
     if(time == 1){
         document.documentElement.style.setProperty('--foreground-color', "white");
         document.documentElement.style.setProperty('--background-color', "black");
     }else{
-        document.documentElement.style.setProperty('--foreground-color', "black");
-        document.documentElement.style.setProperty('--background-color', "white");
+        document.documentElement.style.setProperty('--foreground-color', "");
+        document.documentElement.style.setProperty('--background-color', "");
     }
+}
+
+const waitUntil = (condition, checkInterval=100) => {
+    return new Promise(resolve => {
+        let interval = setInterval(() => {
+            if (!condition()) return;
+            clearInterval(interval);
+            resolve();
+        }, checkInterval)
+    })
 }
