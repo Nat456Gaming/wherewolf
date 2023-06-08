@@ -24,7 +24,7 @@ async function start(){
             let role_img = document.createElement("img");
             role_img.setAttribute("class","role-img");
             role_img.setAttribute("id","role_img"+String(pos+1));
-            role_img.src = `/images/roles/${player.role}.png`
+            role_img.src = `images/roles/${player.role}.png`
             document.getElementById("btn_player"+String(pos+1)).prepend(role_img);
         });
         document.getElementById("center_button").style.display = "block";
