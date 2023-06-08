@@ -15,7 +15,7 @@ window.onload = () => {
     update();
     if(getCookie("players_list")){
         auto_update.forEach(variable =>{
-            eval(variable+' = JSON.parse(getCookie("'+variable+'"));');
+            eval(`${variable} = JSON.parse(getCookie("${variable}"));`);
         });
         start_game(true);
     }
@@ -33,7 +33,7 @@ let setup_list = [];
 
 function update(){
     auto_update.forEach(variable =>{
-        eval('if (JSON.stringify('+variable+') != getCookie("'+variable+'") && '+variable+' != "" ) setCookie("'+variable+'",JSON.stringify('+variable+'));');
+        eval(`if (JSON.stringify(${variable}) != getCookie("${variable}") && ${variable} != "" ) setCookie("${variable}",JSON.stringify(${variable}));`);
     });
     let players = document.getElementById('players_number').value;
     let roles = document.getElementById('roles_number').value;
