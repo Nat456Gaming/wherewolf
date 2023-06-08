@@ -4,7 +4,7 @@ const min_players = 4;
 const max_roles = 20;
 const min_roles = 0; //normally 8
 
-const auto_update = ["players_list","current_roles","step","night"]
+const auto_update = ["players_list","current_roles","game"]
 
 window.onload = () => {
     document.getElementById("game_style").max = roles_file.length;
@@ -110,6 +110,7 @@ function start_game(reload = false){
                     role : give_role(true),
                     new_role : true,
                     lifes : Number(document.getElementById("roles_number").value)-1,
+                    role_setting : 0,
                     is_killed : false,
                     is_protected : false,
                     is_infected : false,
@@ -134,7 +135,7 @@ function exit(){
     if (confirm("Veux-tu vraiment quitter la partie ?")){
         players_list = [];
         current_roles = [];
-        step = 0;
+        game = [];
         auto_update.forEach(variable => delCookie(variable));
         document.getElementById("game_player_container").innerHTML = "<!-- PLAYERS CARDS GENERATED IN JS -->";
         document.getElementById("center_button").style.display = "block";

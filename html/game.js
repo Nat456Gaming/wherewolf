@@ -1,37 +1,40 @@
-let step = 0; //0 is beginning, 1 is night, 2 is morning, 3 is vote
-let night = "wolf";
+let game = [] ;
 
 function start(){
-    step = 0;
+    game = {
+        step : 0, //0 is beginning, 1 is night, 2 is morning, 3 is vote
+        night : "loup"
+    }
+    game.step = 0;
 }
 
 function center_button(){
-    switch (step){
+    switch (game.step){
         case 0:
             document.getElementById("center_button").style.display = "none";
-            step = 1;
+            game.step = 1;
             daytime();
             break;
         case 1:
             //do nothing
             break;
         case 2:
-            step = 3;
+            game.step = 3;
             break;
         case 3:
             console.log("Nobody has been voted");
             document.getElementById("center_button").style.display = "none";
-            step = 1;
+            game.step = 1;
     }
 }
 
 function player_pressed(player){
-    switch (step){
+    switch (game.step){
         case 0:
             console.log(players_list[player-1]);
             break;
         case 1:
-            switch (night){
+            switch (game.night){
                 case "wolf":
                     document.getElementById("img_player"+player).style.border = "solid red 5px";
                     break;
@@ -42,7 +45,7 @@ function player_pressed(player){
             break;
         case 3:
             console.log("Player "+player+" has been voted");
-            step = 1;
+            game.step = 1;
     }
 }
 
@@ -54,12 +57,12 @@ function is_game_finished(newrole = false){
     let wolves_winning = true;
     let alive = [];
     players_list.forEach(player => {
-        if (player.role == "wolf" || player.is_infected) village_winning = false;
+        if (player.role.includes("loup") || player.is_infected) village_winning = false;
         else if (player.role) wolves_winning = false;
         if (player.role) alive.push(player.name);
     });
     if (newrole){
-        if (newrole == "wolf") village_winning = false;
+        if (newrole.includes("loup")) village_winning = false;
         else wolves_winning = false;
     }
     if (alive.length == 1) return alive[0];
