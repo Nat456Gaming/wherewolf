@@ -5,34 +5,54 @@ let roles = [];
 let game = [];
 
 function game_update(){
-    auto_update.forEach(variable =>{
-        eval(`if (JSON.stringify(${variable}) != getCookie("${variable}") && ${variable} != "" ) setCookie("${variable}",JSON.stringify(${variable}));`);
-    });
+    auto_update.forEach(variable => eval(`if (JSON.stringify(${variable}) != getCookie("${variable}") && ${variable} != "" ) setCookie("${variable}",JSON.stringify(${variable}));`));
     if(game.step == 1){
         document.querySelectorAll('.img-back').forEach(image => image.style.border = "");
         game.selected.forEach(selected => {
-            if (selected) document.getElementById("img_player"+selected).style.border = "solid red 5px";
+            if (selected) document.getElementById("img_player"+selected).style.border = "solid "+ roles_action[game.current_role].color +" 5px";
         })
     }
 }
 
 async function start(){
-    if (game.step = 0) game.selected = false;
+    document.getElementById("center_button").style.display = "block";
+    if (game.step == 0) game.selected = [];
     game_update_trig = setInterval(() => game_update(), 100);
     while (! is_game_finished()){
-        players.forEach((player, pos) => {
-            let role_img = document.createElement("img");
-            role_img.setAttribute("class","role-img");
-            role_img.setAttribute("id","role_img"+String(pos+1));
-            role_img.src = `images/roles/${player.role}.png`
-            document.getElementById("btn_player"+String(pos+1)).prepend(role_img);
-        });
-        document.getElementById("center_button").style.display = "block";
-        await waitUntil(() => ("123".includes(game.step)));
-        document.getElementById("center_button").style.display = "none";
-        daytime();
-        console.log("nuit:"+game.step)
-        await waitUntil(() => (game.step == 2));
+        if (game.step == 0){ // ------beginning------
+            create_reverse();
+            await waitUntil(() => (game.step == 1));
+            document.querySelectorAll('.role-img').forEach(e => e.remove());
+        }
+        if(game.step == 1){ // ------night------
+            console.log("Le village s'endors")
+            daytime();
+            let old_role = game.current_role
+            for (let role in roles_action) {
+                if (((old_role && old_role == role) || ! old_role) && roles.current.includes(role)){
+                    old_role = false;
+                    game.current_role = role;
+                    document.getElementById("center_button").style.display = "block";
+                    console.log("Le.s "+role+" se réveille.nt")
+                    await waitUntil(() => (document.getElementById("center_button").style.display == "none")); // when time for the role ends
+                    console.log("Le.s "+role+" se rendorme.nt")
+                }
+            }
+            game.current_role = false;
+            game.step = 2;
+            console.log("Le village se réveille")
+            daytime();
+        }
+        if(game.step == 2){ // ------morning------
+            console.log("... est mort")
+            create_reverse();
+            await waitUntil(() => (game.step == 3));
+            document.querySelectorAll('.role-img').forEach(e => e.remove());
+        }
+        if(game.step == 3){ // ------vote------
+            console.log("Place au vote")
+            await waitUntil(() => (game.step == 0));
+        }
     }
 }
 
@@ -42,15 +62,17 @@ function center_button(){
             if(! game.selected[0]) game.step = 1;
             break;
         case 1:
-            //do nothing
+            game.selected.forEach(selected => {if(selected) roles_action[game.current_role].done(selected);})
+            game.selected = [];
+            document.getElementById("center_button").style.display = "none";
             break;
         case 2:
-            game.step = 3;
+            if(! game.selected[0]) game.step = 3;
             break;
         case 3:
             console.log("Nobody has been voted");
             document.getElementById("center_button").style.display = "none";
-            game.step = 1;
+            game.step = 0;
     }
 }
 
@@ -60,36 +82,61 @@ function player_pressed(player){
             return_card(player);
             break;
         case 1:
-            switch (game.night){
-                case "loup":
-                    game.selected[0] = player;
-                    //players[player-1].is_killed = true;
-                    break;
-            }
-            //faudra utilise role_order
-            //role_action[game.night](game);
+            roles_action[game.current_role].selected(player);
             break;
         case 2:
-            //do nothing
+            return_card(player);
             break;
         case 3:
             console.log("Player "+player+" has been voted");
-            game.step = 1;
     }
 }
 
-function return_card(player){
-    if((game.selected[0] == player || ! game.selected[0])){
+function create_reverse(){
+    players.forEach((player, pos) => {
+        let role_img = document.createElement("img");
+        role_img.setAttribute("class","role-img");
+        role_img.setAttribute("id","role_img"+String(pos+1));
+        role_img.src = `images/roles/${player.role}.png`
+        document.getElementById("btn_player"+String(pos+1)).prepend(role_img);
+    });
+}
+
+function return_card(player, dead = false){
+    if((game.selected[0] == player || ! game.selected[0] || dead)){
         if (document.getElementById("role_img"+player).style.display == ""){
             document.getElementById("role_img"+player).style.display = "block";
             document.getElementById("img_player"+player).style.display = "none";
-            game.selected[0] = player;
+            if (!dead) game.selected[0] = player;
         }else{
             document.getElementById("role_img"+player).style.display = "";
             document.getElementById("img_player"+player).style.display = "";
-            game.selected[0] = false;
+            players[player-1].new_role = false;
+            if (!dead) game.selected[0] = false;
         }
     }
+}
+
+/**
+ * @param {number} nb_player - player to kill
+ * @param {boolean} try_married - kill the player married to them (true)
+ * @return {string} The new role of the player
+ */
+function kill(nb_player, try_married = true){
+    let player = players[nb_player-1]
+    roles_action[player.role].killed()
+    player.is_infected = false;
+    if (player.lifes > 0){
+        player.lifes --;
+        player.role = give_role();
+        if (player.role) player.new_role = true;
+    }else player.role = false;
+    game_end(is_game_finished());
+    if (player.married_to){
+        if (try_married) kill(player.married_to,false);
+        player.married_to = 0
+    }
+    return player.role;
 }
 
 /**
@@ -114,39 +161,10 @@ function is_game_finished(newrole = false){
     return false;
 }
 
-/**
- * @param {number} nb_player - player to kill
- * @param {boolean} try_married - kill the player married to them (true)
- * @return {string} The new role of the player
- */
-function kill(nb_player, try_married = true){
-    let player = players[nb_player-1]
-    player.is_infected = false;
-    if (player.lifes > 0){
-        player.lifes --;
-        player.role = give_role();
-        if (player.role) player.new_role = true;
-    }else player.role = false;
-    game_end(is_game_finished());
-    if (player.married_to){
-        if (try_married) kill(player.married_to,false);
-        player.married_to = 0
-    }
-    return player.role;
-}
-
 function game_end(winner){
     if (winner){
         console.log(winner+" ont gagnés !");
     }else return ;
-}
-
-/**
- * @param {object} list - input array
- * @return {} A random object in the array
- */
-function random(list){
-    return list[Math.floor(Math.random()*list.length)];
 }
 
 function give_role(beginning = false){
@@ -179,4 +197,22 @@ const waitUntil = (condition, checkInterval=100) => {
             resolve();
         }, checkInterval)
     })
+}
+
+/**
+ * @param {object} list - input array
+ * @return {} A random object in the array
+ */
+function random(list){
+    return list[Math.floor(Math.random()*list.length)];
+}
+
+/**
+ * @param {string} value - value to find
+ * @param {object} object - object to search in
+ * @param {string} variable - variable that need to be checked
+ * @return {} index of the element
+ */
+function getElementPos(value, object=players, variable="role"){
+    return object.findIndex(item => item[variable] == value)
 }

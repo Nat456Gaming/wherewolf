@@ -14,6 +14,7 @@ window.onload = () => {
     if(! getCookie("player_names")) setCookie("player_names",JSON.stringify([]));
     if(getCookie("players")){
         auto_update.forEach(variable => eval(`${variable} = JSON.parse(getCookie("${variable}"));`));
+        console.log(game)
         settings_update();
         start_game(true);
     }else settings_update_trig = setInterval(() => settings_update(), 100);
@@ -117,8 +118,8 @@ function start_game(reload = false){
                 players.push(player);
             }
             game = {
-                step : 0, //0 is beginning, 1 is night, 2 is morning, 3 is vote
-                night : "loup",
+                step : 0,
+                current_role : false,
                 selected : []
             }
             clearInterval(settings_update_trig);

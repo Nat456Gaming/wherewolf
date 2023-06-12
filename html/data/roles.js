@@ -4,9 +4,7 @@ const roles_file = [
     ["loup","loup","villageois","loup","voyante","voleur","sorciere","cupidon","petite_fille","loup","chasseur","ancien","loup","villageois","salvateur","idiot","loup_blanc","bouc_emissaire","corbeau","ankou","sectaire","comedien"],
 ]
 
-const roles_order = ["cupidon","enfant","garde","voyante","loup","loup_infecte","loup_blanc","sorciere"];
-
-const role_names = {
+const roles_names = {
     loup : "Loup-Garou",
     loup_infecte : "Infecte père des loups",
     loup_blanc : "Loup Blanc",
@@ -19,48 +17,59 @@ const role_names = {
     chasseur : "Chasseur",
     ancien : "Ancien du Village",
     garde : "Garde",
-    servante : "Servante dévouée" 
+    servante : "Servante dévouée",
+    enfant : "Enfant sauvage"
 }
 
-const role_action = {
-    loup : (game)=>{
-        game.selected = player;
-        //players[player-1].is_killed = true;
+const roles_action = {
+    cupidon : {
+        once_a_game : true,
+        color : "pink",
+        selected : player => {return false},
+        done : player => {return false},
+        killed : () => {return false;}
     },
-    loup_infecte : (game)=>{
-        //le code
+    enfant : {
+        once_a_game : true,
+        color : "red",
+        selected : player => game.selected[0] = (game.selected[0] == player) ? false : player,
+        done : player => players[getElementPos("enfant")].role_settings = player,
+        killed : () => {return false;}
     },
-    loup_blanc : (game)=>{
-        //le code
+    garde : {
+        color : "green",
+        selected : player => {return false},
+        done : player => {return false},
+        killed : () => {return false;}
     },
-    villageois : (game)=>{
-        //le code
+    voyante : {
+        color : "purple",
+        selected : player => {return false},
+        done : player => {return false},
+        killed : () => {return false;}
     },
-    voyante : (game)=>{
-        //le code
+    loup : {
+        color : "red",
+        selected : player => game.selected[0] = (game.selected[0] == player) ? false : player,
+        done : player => players[player-1].is_killed = true,
+        killed : () => {return false;}
     },
-    voleur : (game)=>{
-        //le code
+    loup_infecte : {
+        color : "brown",
+        selected : player => {if (players[player-1].is_killed && players[getElementPos("loup_infecte")].role_settings != "done") game.selected[0] = (game.selected[0] == player) ? false : player},
+        done : player => {players[player-1] = {is_killed : false, is_infected : true}; players[getElementPos("loup_infecte")].role_settings = "done";},
+        killed : () => {return false;}
     },
-    sorciere : (game)=>{
-        //le code
+    loup_blanc : {
+        color : "red",
+        selected : player => game.selected[0] = (game.selected[0] == player) ? false : player,
+        done : player => players[player-1].is_killed = true,
+        killed : () => {return false;}
     },
-    cupidon : (game)=>{
-        //le code
-    },
-    petite_fille : (game)=>{
-        //le code
-    },
-    chasseur : (game)=>{
-        //le code
-    },
-    ancien : (game)=>{
-        //le code
-    },
-    garde : (game)=>{
-        //le code
-    },
-    servante : (game)=>{
-        //le code
+    sorciere : {
+        color : "red",
+        selected : player => {return false},
+        done : player => {return false},
+        killed : () => {return false;}
     },
 }
