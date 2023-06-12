@@ -119,7 +119,7 @@ function start_game(reload = false){
             game = {
                 step : 0, //0 is beginning, 1 is night, 2 is morning, 3 is vote
                 night : "loup",
-                selected : false
+                selected : []
             }
             clearInterval(settings_update_trig);
         }

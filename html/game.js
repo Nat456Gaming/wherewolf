@@ -9,10 +9,10 @@ function game_update(){
         eval(`if (JSON.stringify(${variable}) != getCookie("${variable}") && ${variable} != "" ) setCookie("${variable}",JSON.stringify(${variable}));`);
     });
     if(game.step == 1){
-        if (game.selected){
-            document.querySelectorAll('.img-back').forEach(image => image.style.border = "");
-            document.getElementById("img_player"+game.selected).style.border = "solid red 5px";
-        }
+        document.querySelectorAll('.img-back').forEach(image => image.style.border = "");
+        game.selected.forEach(selected => {
+            if (selected) document.getElementById("img_player"+selected).style.border = "solid red 5px";
+        })
     }
 }
 
@@ -39,7 +39,7 @@ async function start(){
 function center_button(){
     switch (game.step){
         case 0:
-            if(! game.selected) game.step = 1;
+            if(! game.selected[0]) game.step = 1;
             break;
         case 1:
             //do nothing
@@ -62,7 +62,7 @@ function player_pressed(player){
         case 1:
             switch (game.night){
                 case "loup":
-                    game.selected = player;
+                    game.selected[0] = player;
                     //players[player-1].is_killed = true;
                     break;
             }
@@ -79,15 +79,15 @@ function player_pressed(player){
 }
 
 function return_card(player){
-    if((game.selected == player || ! game.selected)){
+    if((game.selected[0] == player || ! game.selected[0])){
         if (document.getElementById("role_img"+player).style.display == ""){
             document.getElementById("role_img"+player).style.display = "block";
             document.getElementById("img_player"+player).style.display = "none";
-            game.selected = player;
+            game.selected[0] = player;
         }else{
             document.getElementById("role_img"+player).style.display = "";
             document.getElementById("img_player"+player).style.display = "";
-            game.selected = false;
+            game.selected[0] = false;
         }
     }
 }
