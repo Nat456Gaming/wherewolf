@@ -60,14 +60,14 @@ function player_pressed(player){
             return_card(player);
             break;
         case 1:
-            /*switch (game.night){
+            switch (game.night){
                 case "loup":
                     game.selected = player;
                     //players[player-1].is_killed = true;
                     break;
-            }*/
+            }
             //faudra utilise role_order
-            role_action[game.night](game);
+            //role_action[game.night](game);
             break;
         case 2:
             //do nothing
