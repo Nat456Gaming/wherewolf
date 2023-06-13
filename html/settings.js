@@ -97,11 +97,12 @@ function start_game(reload = false){
     }
     if (test){
         if(! reload){
-            let roles_list = roles_file[document.getElementById("game_style").value-1].slice(0,old_roles*old_players)
+            let roles_list = roles_file[document.getElementById("game_style").value-1].slice(0,old_roles*old_players);
             roles = {
                 current : JSON.parse(JSON.stringify(roles_list)),
                 remaining : JSON.parse(JSON.stringify(roles_list))
             }
+            if(roles.current.includes("cupidon")) roles.current.push("amoureux");
             players = [];
             for (let i = 1; i <= document.getElementById('players_number').value; i++) {
                 let player = {
@@ -146,6 +147,7 @@ function exit(){
         document.getElementById("home").style.display = "block";
     }
 }
+
 
 
 function create_card(player,total){

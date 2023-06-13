@@ -29,6 +29,11 @@ const roles_action = {
         done : player => {return false},
         killed : () => {return false;}
     },
+    amoureux : {
+        selected : player => {return false},
+        done : player => {return false},
+        killed : () => {return false;}
+    },
     enfant : {
         once_a_game : true,
         color : "red",
@@ -38,13 +43,12 @@ const roles_action = {
     },
     garde : {
         color : "green",
-        selected : player => {return false},
-        done : player => {return false},
+        selected : player => game.selected[0] = (game.selected[0] == player || players[getElementPos("loup_infecte")].role_settings == player) ? false : player,
+        done : player => {players[player-1].is_protected = true, players[getElementPos("loup_infecte")].role_settings = player;},
         killed : () => {return false;}
     },
     voyante : {
-        color : "purple",
-        selected : player => {return false},
+        selected : player => {if(! game.selected[0]){game.selected[0] = player; return_card(player);}},
         done : player => {return false},
         killed : () => {return false;}
     },

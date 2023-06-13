@@ -119,7 +119,7 @@ function return_card(player, dead = false){
 
 /**
  * @param {number} nb_player - player to kill
- * @param {boolean} try_married - kill the player married to them (true)
+ * @param {boolean} try_married - kill the player married to them (= true)
  * @return {string} The new role of the player
  */
 function kill(nb_player, try_married = true){
@@ -140,6 +140,7 @@ function kill(nb_player, try_married = true){
 }
 
 /**
+ * @param {string} newrole - to test with an other role
  * @return {string} Return who won (false if nobody)
  */
 function is_game_finished(newrole = false){
@@ -209,8 +210,8 @@ function random(list){
 
 /**
  * @param {string} value - value to find
- * @param {object} object - object to search in
- * @param {string} variable - variable that need to be checked
+ * @param {object} object - object to search in (= players)
+ * @param {string} variable - variable that need to be checked (= role)
  * @return {} index of the element
  */
 function getElementPos(value, object=players, variable="role"){
