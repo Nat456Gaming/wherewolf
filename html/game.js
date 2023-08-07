@@ -25,17 +25,18 @@ async function start(){
             document.querySelectorAll('.role-img').forEach(e => e.remove());
         }
         if(game.step == 1){ // ------night------
-            console.log("Le village s'endors")
+            console.log("Le village s'endors");
             daytime();
-            let old_role = game.current_role
-            for (let role in roles_action) {
+            let old_role = game.current_role;
+            for (let nb in roles_order) {
+                let role = roles_order[nb]
                 if (((old_role && old_role == role) || ! old_role) && roles.current.includes(role)){
                     old_role = false;
                     game.current_role = role;
                     document.getElementById("center_button").style.display = "block";
-                    console.log("Le.s "+role+" se réveille.nt")
+                    console.log("Le.s "+roles_names[role]+" se réveille.nt");
                     await waitUntil(() => (document.getElementById("center_button").style.display == "none")); // when time for the role ends
-                    console.log("Le.s "+role+" se rendorme.nt")
+                    console.log("Le.s "+roles_names[role]+" se rendorme.nt");
                 }
             }
             game.current_role = false;

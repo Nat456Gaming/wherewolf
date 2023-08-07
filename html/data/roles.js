@@ -18,8 +18,11 @@ const roles_names = {
     ancien : "Ancien du Village",
     garde : "Garde",
     servante : "Servante dévouée",
-    enfant : "Enfant sauvage"
+    enfant : "Enfant sauvage",
+    amoureux : "Amoureux"
 }
+
+const roles_order = ["cupidon","amoureux","enfant","garde","voyante","loup","loup_infecte","loup_blanc","sorcière"]
 
 const roles_action = {
     cupidon : {
